@@ -34,9 +34,6 @@ public class StockServiceImpl implements StockService {
 
 	private RestTemplate restTemplate = new RestTemplate();
 
-	@Value("${auth.user.pass}")
-	String pass;
-
 	/**
 	 * Adds the company stock.
 	 *
