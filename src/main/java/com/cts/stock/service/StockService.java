@@ -1,8 +1,7 @@
 package com.cts.stock.service;
 
-
+import org.slf4j.Logger;
 import com.cts.stock.dto.CompanyDto;
-import com.cts.stock.dto.StockDetails;
 import com.cts.stock.entity.Stock;
 
 /**
@@ -18,7 +17,7 @@ public interface StockService {
 	 * @return the boolean
 	 * @throws Exception the exception
 	 */
-	public Stock addCompanyStock(String companyCode, StockDetails stockDetails) throws Exception;
+	public Stock addCompanyStock(String companyCode, Double stockDetails) throws Exception;
 
 	/**
 	 * Filter stocks.

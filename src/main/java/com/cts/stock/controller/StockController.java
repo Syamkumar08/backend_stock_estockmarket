@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cts.stock.Constant.StockConstants;
 import com.cts.stock.dto.CompanyDto;
 import com.cts.stock.dto.ResponseMessage;
-import com.cts.stock.dto.StockDetails;
 import com.cts.stock.dto.StockResponse;
 import com.cts.stock.entity.Stock;
 import com.cts.stock.service.StockService;
@@ -27,6 +27,7 @@ import lombok.Generated;
 @RestController
 @RequestMapping("/api/v1.0/market/stock")
 @Generated
+@CrossOrigin(origins = "http://localhost:4200")
 public class StockController {
 
     private final Logger applicationLog = LoggerFactory.getLogger("[APPLICATION]");
@@ -47,13 +48,13 @@ public class StockController {
      * @return the response entity
      */
     @PostMapping(value = "/add/{companycode}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StockResponse<Stock>> addCompanyStock(@RequestBody StockDetails stockDetails,
+    public ResponseEntity<StockResponse<Stock>> addCompanyStock(@RequestBody Double stockPrice,
             @PathVariable("companycode") String companyCode) {
         applicationLog.info("Entering addCompanyStock Controller");
         StockResponse<Stock> response = new StockResponse<>();
         ResponseMessage message = new ResponseMessage();
         try {
-            Stock isSuccessful = stockService.addCompanyStock(companyCode, stockDetails);
+            Stock isSuccessful = stockService.addCompanyStock(companyCode, stockPrice);
             response.withData(isSuccessful);
             applicationLog.info(StockConstants.EXITING_ADD_COMPANY_STOCK_CONTROLLER);
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -97,7 +98,7 @@ public class StockController {
                 response.withData(null);
                 response.withMessage(message);
                 applicationLog.info(StockConstants.EXITING_FILTER_STOCKS_CONTROLLER);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(response, HttpStatus.OK);
             }
         } catch (Exception e) {
             errorLog.error(StockConstants.FILTER_STOCK_ERROR + ": {}", e.getMessage());
@@ -117,7 +118,7 @@ public class StockController {
      * @return the response entity
      */
     @GetMapping(value = "/get/stockPrice/{companycode}")
-    public ResponseEntity<StockResponse<Double>> fetchLatestStockPrice(
+    public ResponseEntity<StockResponse> fetchLatestStockPrice(
             @PathVariable("companycode") String companyCode) {
         applicationLog.info("Entering fetchLatestStockPrice Controller");
         StockResponse<Double> response = new StockResponse<>();
@@ -137,7 +138,7 @@ public class StockController {
                 response.withData(null);
                 response.withMessage(message);
                 applicationLog.info(StockConstants.EXITING_FETCH_LATEST_STOCK_PRICE_CONTROLLER);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(response, HttpStatus.OK);
             }
         } catch (Exception e) {
             errorLog.error(StockConstants.STOCK_FETCH_ERROR + "{}", e.getMessage());

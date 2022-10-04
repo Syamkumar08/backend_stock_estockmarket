@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.slf4j.Logger;
 
 /**
  * The Class StockDao.
@@ -24,22 +25,15 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Stock {
 
-	/** The stock id. */
 	@Id
 	private String stockId;
 
-	private String stockName;
-
-	/** The company code. */
 	private String companyCode;
 
-	/** The date. */
 	private Date date;
 
-	/** The price. */
 	private Double price;
 
-	/** The time stamp. */
 	private Long timeStamp;
 
 }

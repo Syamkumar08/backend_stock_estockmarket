@@ -1,28 +1,23 @@
 package com.cts.stock.service.Impl;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.OptionalDouble;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.cts.stock.dto.CompanyDto;
 import com.cts.stock.dto.ResponseData;
-import com.cts.stock.dto.StockDetails;
 import com.cts.stock.dto.StockDto;
 import com.cts.stock.entity.Stock;
 import com.cts.stock.repository.StockRepository;
@@ -30,9 +25,6 @@ import com.cts.stock.service.StockService;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * The Class StockServiceImpl.
- */
 @Service
 @Slf4j
 public class StockServiceImpl implements StockService {
@@ -54,10 +46,10 @@ public class StockServiceImpl implements StockService {
 	 * @throws Exception the exception
 	 */
 	@Override
-	public Stock addCompanyStock(String companyCode, StockDetails stockDetails) throws Exception {
+	public Stock addCompanyStock(String companyCode, Double stockDetails) throws Exception {
 		log.info("Entering addCompanyStock Service");
-		Stock stock = Stock.builder().companyCode(companyCode).stockName(stockDetails.getStockName())
-				.price(stockDetails.getStockPrice()).date(new Date()).timeStamp(new Date().getTime()).build();
+		Stock stock = Stock.builder().companyCode(companyCode).price(stockDetails)
+				.date(new Date()).timeStamp(new Date().getTime()).build();
 		Stock save = stockRepository.save(stock);
 		log.info("Exiting addCompanyStock Service");
 		return save;
@@ -76,9 +68,9 @@ public class StockServiceImpl implements StockService {
 	public CompanyDto filterStocks(String companyCode, String startDate, String endDate) throws Exception {
 		log.info("Entering filterStocks Service");
 
-		SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
-		Date startDateFormatted = dateFormatter.parse(startDate);
-		Date endDateFormatted = dateFormatter.parse(endDate);
+		// SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
+		Date startDateFormatted = toDate(convertStringToLocalDate(startDate, "yyyy-MM-dd"));
+		Date endDateFormatted = toDate(convertStringToLocalDate(endDate, "yyyy-MM-dd"));
 
 		Calendar c = Calendar.getInstance();
 		c.setTime(endDateFormatted);
@@ -86,18 +78,17 @@ public class StockServiceImpl implements StockService {
 		endDateFormatted = c.getTime();
 
 		List<Stock> stocks = stockRepository.filterStock(companyCode, startDateFormatted, endDateFormatted);
-		String companyUrl = "http://localhost:8081/api/v1.0/market/company/info/" + companyCode;
+		String companyUrl = "http://localhost:8081/api/v1.0/market/company/companyInfo/" + companyCode;
 		log.info("companyUrl: {}", companyUrl);
 
 		CompanyDto companyDetails = null;
 		ResponseEntity<ResponseData> response = null;
 		try {
-			response = restTemplate.exchange(companyUrl, HttpMethod.GET, getAuthToken(), ResponseData.class);
-			log.info("response: {}", response.getStatusCode());
-			if (response.getStatusCode().is2xxSuccessful()) {
-				log.info("responseBody: {}", response.getBody());
-				ResponseData responseData = response.getBody();
-				companyDetails = responseData.getData();
+			response = restTemplate.getForEntity(companyUrl, ResponseData.class);
+			
+			if (response.getBody().getData()!=null) {
+				log.info("response: {}", response.getBody().getData());
+				companyDetails = response.getBody().getData();
 
 				List<Double> stockPrices = new ArrayList<Double>();
 				Double maxPrice = null;
@@ -180,30 +171,46 @@ public class StockServiceImpl implements StockService {
 		return isSuccessful;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private HttpEntity<String> getAuthToken() {
-		String token = null;
+	// @SuppressWarnings({ "rawtypes", "unchecked" })
+	// private HttpEntity<String> getAuthToken() {
+	// 	String token = null;
 
-		String url = "http://localhost:8081/api/v1.0/market/company/login";
-		HttpHeaders header = new HttpHeaders();
-		header.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+	// 	String url = "http://localhost:8081/api/v1.0/market/company/login";
+	// 	HttpHeaders header = new HttpHeaders();
+	// 	header.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-		MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
-		body.add("username", "riya");
-		body.add("STOCK_PASS", pass);
-		HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<MultiValueMap<String, String>>(body, header);
-		try {
-			ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-			Map<String, String> responseBody = (Map<String, String>) response.getBody();
-			if (responseBody != null)
-				token = responseBody.get("access_token");
-		} catch (Exception e) {
-			log.error("Error in fetching token");
+	// 	MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
+	// 	body.add("username", "riya");
+	// 	body.add("STOCK_PASS", pass);
+	// 	HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<MultiValueMap<String, String>>(body, header);
+	// 	try {
+	// 		ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
+	// 		Map<String, String> responseBody = (Map<String, String>) response.getBody();
+	// 		if (responseBody != null)
+	// 			token = responseBody.get("access_token");
+	// 	} catch (Exception e) {
+	// 		log.error("Error in fetching token");
+	// 	}
+
+	// 	HttpHeaders headers = new HttpHeaders();
+	// 	headers.add("Authorization", "Bearer " + token);
+	// 	HttpEntity<String> getEntity = new HttpEntity<>(headers);
+	// 	return getEntity;
+	// }
+
+	public static LocalDate convertStringToLocalDate(final String date, final String datePattern) {
+		LocalDate localDate = null;
+		if (!StringUtils.isEmpty(date) && !StringUtils.isEmpty(datePattern)) {
+			final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(datePattern);
+			localDate = LocalDate.parse(date, dateFormatter);
 		}
+		return localDate;
+	}
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Authorization", "Bearer " + token);
-		HttpEntity<String> getEntity = new HttpEntity<>(headers);
-		return getEntity;
+	public static Date toDate(final LocalDate toConvert) {
+		if (toConvert == null) {
+			return null;
+		}
+		return Date.from(toConvert.atStartOfDay(ZoneId.systemDefault()).toInstant());
 	}
 }
