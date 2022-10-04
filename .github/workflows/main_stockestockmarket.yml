@@ -50,4 +50,4 @@ jobs:
           app-name: 'StockEStockMarket'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_56257DC61F4941F4BEF06819F6A1EDB8}}
-          package: '*.jar'
+          package: '*.war'
