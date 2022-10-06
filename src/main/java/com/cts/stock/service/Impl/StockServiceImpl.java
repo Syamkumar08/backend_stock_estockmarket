@@ -75,7 +75,7 @@ public class StockServiceImpl implements StockService {
 		endDateFormatted = c.getTime();
 
 		List<Stock> stocks = stockRepository.filterStock(companyCode, startDateFormatted, endDateFormatted);
-		String companyUrl = "http://localhost:8081/api/v1.0/market/company/companyInfo/" + companyCode;
+		String companyUrl = "https://companyestock.azurewebsites.net/api/v1.0/market/company/companyInfo/" + companyCode;
 		log.info("companyUrl: {}", companyUrl);
 
 		CompanyDto companyDetails = null;
@@ -167,33 +167,6 @@ public class StockServiceImpl implements StockService {
 		log.info("Exiting deleteCompanyStocks Service");
 		return isSuccessful;
 	}
-
-	// @SuppressWarnings({ "rawtypes", "unchecked" })
-	// private HttpEntity<String> getAuthToken() {
-	// 	String token = null;
-
-	// 	String url = "http://localhost:8081/api/v1.0/market/company/login";
-	// 	HttpHeaders header = new HttpHeaders();
-	// 	header.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-	// 	MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
-	// 	body.add("username", "riya");
-	// 	body.add("STOCK_PASS", pass);
-	// 	HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<MultiValueMap<String, String>>(body, header);
-	// 	try {
-	// 		ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-	// 		Map<String, String> responseBody = (Map<String, String>) response.getBody();
-	// 		if (responseBody != null)
-	// 			token = responseBody.get("access_token");
-	// 	} catch (Exception e) {
-	// 		log.error("Error in fetching token");
-	// 	}
-
-	// 	HttpHeaders headers = new HttpHeaders();
-	// 	headers.add("Authorization", "Bearer " + token);
-	// 	HttpEntity<String> getEntity = new HttpEntity<>(headers);
-	// 	return getEntity;
-	// }
 
 	public static LocalDate convertStringToLocalDate(final String date, final String datePattern) {
 		LocalDate localDate = null;
