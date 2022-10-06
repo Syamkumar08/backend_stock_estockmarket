@@ -10,7 +10,7 @@
 	<groupId>eStockMarket-Stock</groupId>
 	<artifactId>eStockMarket-Stock</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>eStockMarket-Stock</name>
 	<description>eStockMarket project for Spring Boot</description>
 	<properties>
